@@ -120,7 +120,7 @@
 
     .subtitle {
       margin: 0.6rem 0 0.25rem;
-      font-size: 0.6rem;
+      font-size: 0.7rem;
       color: #e5e7eb;
       line-height: 1.4;
     }
@@ -251,13 +251,13 @@
     .status {
       margin-top: 1rem;
       text-align: center;
-      font-size: 0.6rem;
+      font-size: 0.60rem;
       color: #e5e7eb;
     }
 
     .hint {
       text-align: center;
-      font-size: 0.55rem;
+      font-size: 0.60rem;
       color: #9ca3af;
       margin-top: 0.25rem;
     }
@@ -273,6 +273,12 @@
         padding: 0.7rem 0.2rem 0.6rem;
       }
     }
+        .footer {
+      text-align: center;
+      font-size: 0.55rem;
+      color: #9ca3af;
+      margin-top: 0.25rem;
+    }
   </style>
 </head>
 <body>
@@ -285,11 +291,13 @@
     <header>
       <h1>Besarabia Advent &#128169;-endar</h1>
       <p class="subtitle">
-        One track a day while Zhenya's away.
+        Advent countdown until the holy Birthday of Besarabia. <br>
+        Zhenya filled the boxes.
         <br />
         <span>Doors unlock at midnight based on your device time ⏰</span>
+      <p></p>
       </p>
-      <p class="dates-range">10 December 2025 – 4 January 2026 (26 days)</p>
+      <p class="dates-range">10 December 2025 – 10 January 2026</p>
       <p class="tagline">
       </p>
     </header>
@@ -300,12 +308,16 @@
     <p class="hint">
       Tip: on your phone, <strong>add this page to your home screen</strong> so it sits there like a tiny app.
     </p>
+    <p></p>
+        <p class="footer">
+      Besarabia 2025-2026
+    </p>
   </main>
 
   <script>
     // === DATE SETTINGS (change year if needed) ===
     const START_DATE = new Date(2025, 11, 10); // 10 Dec 2025  (month: 11 = December)
-    const END_DATE   = new Date(2026, 0, 4);   // 4 Jan 2026
+    const END_DATE   = new Date(2026, 0, 10);   // 10 Jan 2026
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     const NUM_DAYS   = Math.round((END_DATE - START_DATE) / ONE_DAY_MS) + 1; // inclusive
 
@@ -362,7 +374,7 @@
 
         const infoSpan = document.createElement("span");
         infoSpan.classList.add("info");
-        infoSpan.textContent = song && song.title ? song.title : "secret track TBD";
+        infoSpan.textContent = song && song.title ? song.title : "secret";
         dayDiv.appendChild(infoSpan);
 
         const unlockMidnight = new Date(unlockDate);
@@ -410,7 +422,7 @@
           formatLongDate(START_DATE) + ".";
       } else if (openedCount >= NUM_DAYS) {
         statusEl.textContent =
-          "You reached the end of the pixel bar timeline. Welcome back home 💚";
+          "You reached the end of the pixel bar timeline.";
       } else {
         statusEl.textContent =
           `Unlocked so far: ${openedCount}/${NUM_DAYS}` +
