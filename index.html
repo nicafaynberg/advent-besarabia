@@ -416,12 +416,19 @@
 
     if (notifButtonEl) {
       notifButtonEl.addEventListener("click", function () {
-        if (!window.OneSignal) return;
+        // Basic feedback so we know the click handler is firing
+        console.log("Notifications button clicked");
+
+        if (!window.OneSignal) {
+          alert("Notifications are not ready yet. Try reloading the page in a few seconds.");
+          return;
+        }
 
         OneSignal.push(function () {
           OneSignal.isPushNotificationsEnabled(function (isEnabled) {
             if (isEnabled) {
               updateNotificationUI("already-enabled");
+              alert("You already have notifications enabled for this site.");
             } else {
               // This will trigger the browser permission prompt
               OneSignal.showNativePrompt();
