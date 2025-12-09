@@ -255,6 +255,36 @@
       color: #e5e7eb;
     }
 
+    .notif-section {
+      margin-top: 0.75rem;
+      text-align: center;
+      font-size: 0.60rem;
+      color: #e5e7eb;
+    }
+
+    .notif-note {
+      margin-top: 0.25rem;
+      font-size: 0.5rem;
+      color: #9ca3af;
+    }
+
+    .notif-button {
+      margin-top: 0.4rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 2px solid #22c55e;
+      background: #16a34a;
+      color: #020617;
+      font-family: inherit;
+      font-size: 0.55rem;
+      cursor: pointer;
+    }
+
+    .notif-button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
     .hint {
       text-align: center;
       font-size: 0.60rem;
@@ -280,6 +310,8 @@
       margin-top: 0.25rem;
     }
   </style>
+  <!-- OneSignal Web Push SDK -->
+  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async></script>
 </head>
 <body>
   <!-- pixelated photo layer -->
@@ -297,6 +329,14 @@
         <span>Doors unlock at midnight based on your device time ⏰</span>
       <p></p>
       </p>
+      <section class="notif-section">
+        <button id="enable-notifications-btn" class="notif-button">
+          Enable 12 p.m. notifications
+        </button>
+        <p class="notif-note">
+          On iPhones this only works if you add this page to your Home Screen.
+        </p>
+      </section>
       <p class="dates-range">10 December 2025 – 10 January 2026</p>
       <p class="tagline">
       </p>
@@ -309,12 +349,25 @@
       Tip: on your phone, <strong>add this page to your home screen</strong> so it sits there like a tiny app.
     </p>
     <p></p>
-        <p class="footer">
+    <p class="footer">
       Besarabia 2025-2026
     </p>
   </main>
 
   <script>
+    // === OneSignal Web Push setup ===
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(function () {
+      OneSignal.init({
+        appId: "13380aa6-d0d0-4bf6-9922-b38d75927a56",
+        // If you configured a custom subdomain for HTTP sites, uncomment and fill:
+        // subdomainName: "your-onesignal-subdomain",
+        notifyButton: {
+          enable: false
+        }
+      });
+    });
+
     // === DATE SETTINGS (change year if needed) ===
     const START_DATE = new Date(2025, 11, 10); // 10 Dec 2025  (month: 11 = December)
     const END_DATE   = new Date(2026, 0, 10);   // 10 Jan 2026
@@ -335,6 +388,71 @@
 
     const grid = document.getElementById("calendar-grid");
     const statusEl = document.getElementById("status");
+    const notifStatusEl = document.getElementById("notif-status");
+    const notifButtonEl = document.getElementById("enable-notifications-btn");
+
+    function updateNotificationUI(state) {
+      if (!notifStatusEl || !notifButtonEl) return;
+
+      if (state === "enabled") {
+        notifStatusEl.textContent = "Notifications are on. You’ll get a ping around 12:00 each day.";
+        notifButtonEl.textContent = "Notifications enabled";
+        notifButtonEl.disabled = true;
+      } else if (state === "blocked") {
+        notifStatusEl.textContent =
+          "Notifications are blocked in your browser settings. Please allow notifications for this site.";
+        notifButtonEl.textContent = "Notifications blocked";
+        notifButtonEl.disabled = true;
+      } else if (state === "already-enabled") {
+        notifStatusEl.textContent = "You already have notifications enabled.";
+        notifButtonEl.textContent = "Notifications enabled";
+        notifButtonEl.disabled = true;
+      } else {
+        notifStatusEl.textContent = "Get a Besarabia reminder at 12:00 each day.";
+        notifButtonEl.textContent = "Enable 12 p.m. notifications";
+        notifButtonEl.disabled = false;
+      }
+    }
+
+    if (notifButtonEl) {
+      notifButtonEl.addEventListener("click", function () {
+        if (!window.OneSignal) return;
+
+        OneSignal.push(function () {
+          OneSignal.isPushNotificationsEnabled(function (isEnabled) {
+            if (isEnabled) {
+              updateNotificationUI("already-enabled");
+            } else {
+              // This will trigger the browser permission prompt
+              OneSignal.showNativePrompt();
+            }
+          });
+        });
+      });
+
+      // Keep UI in sync with subscription status and tag the user for daily noon reminders.
+      OneSignal.push(function () {
+        OneSignal.isPushNotificationsEnabled(function (isEnabled) {
+          updateNotificationUI(isEnabled ? "enabled" : "default");
+        });
+
+        OneSignal.on("subscriptionChange", function (isSubscribed) {
+          if (isSubscribed) {
+            // Mark this user as wanting the 12 p.m. Besarabia reminder
+            OneSignal.sendTag("besarabia_daily_noon", "true");
+            try {
+              var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown";
+              OneSignal.sendTag("timezone", tz);
+            } catch (e) {
+              // ignore timezone errors
+            }
+            updateNotificationUI("enabled");
+          } else {
+            updateNotificationUI("default");
+          }
+        });
+      });
+    }
 
     function formatShortDate(date) {
       return date.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
