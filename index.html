@@ -380,27 +380,35 @@
         const unlockMidnight = new Date(unlockDate);
         unlockMidnight.setHours(0, 0, 0, 0);
 
-        if (today < unlockMidnight) {
-          dayDiv.classList.add("locked");
-        } else {
-          openedCount++;
-          if (today.getTime() === unlockMidnight.getTime()) {
-            dayDiv.classList.add("available");
-            availableToday++;
-          } else if (today > unlockMidnight) {
-            dayDiv.classList.add("past");
+      if (today < unlockMidnight) {
+        dayDiv.classList.add("locked");
+      } else {
+        openedCount++;
+
+        if (today.getTime() === unlockMidnight.getTime()) {
+          dayDiv.classList.add("available");
+          availableToday++;
+
+          // ★ NEW: Replace "secret" with "open me" on the unlock day
+          if (infoSpan.textContent === "secret") {
+            infoSpan.textContent = "open me";
           }
 
-          if (song && song.url) {
-            dayDiv.addEventListener("click", () => {
-              window.open(song.url, "_blank", "noopener");
-            });
-          } else {
-            dayDiv.addEventListener("click", () => {
-              alert("Oops, no link yet for this day 🙈");
-            });
-          }
+        } else if (today > unlockMidnight) {
+          dayDiv.classList.add("past");
         }
+
+        if (song && song.url) {
+          dayDiv.addEventListener("click", () => {
+            window.open(song.url, "_blank", "noopener");
+          });
+        } else {
+          dayDiv.addEventListener("click", () => {
+            alert("Oops, no link yet for this day 🙈");
+          });
+        }
+      }
+
 
         dayDiv.addEventListener("click", () => {
           if (dayDiv.classList.contains("locked")) {
@@ -427,7 +435,7 @@
         statusEl.textContent =
           `Unlocked so far: ${openedCount}/${NUM_DAYS}` +
           (availableToday > 0
-            ? " — you’ve got a new track today! 🎁"
+            ? " — you’ve got a new surprise today! 🎁"
             : " — no new door today, but you can replay old songs.");
       }
 
