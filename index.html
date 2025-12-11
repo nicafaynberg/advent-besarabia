@@ -314,72 +314,87 @@
     </p>
   </main>
 
-  <script>
-    // === DATE SETTINGS (change year if needed) ===
-    const START_DATE = new Date(2025, 11, 10); // 10 Dec 2025  (month: 11 = December)
-    const END_DATE   = new Date(2026, 0, 10);   // 10 Jan 2026
-    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-    const NUM_DAYS   = Math.round((END_DATE - START_DATE) / ONE_DAY_MS) + 1; // inclusive
+<script>
+  // === DATE SETTINGS (change year if needed) ===
+  const START_DATE = new Date(2025, 11, 10); // 10 Dec 2025  (month: 11 = December)
+  const END_DATE   = new Date(2026, 0, 10);  // 10 Jan 2026
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const NUM_DAYS   = Math.round((END_DATE - START_DATE) / ONE_DAY_MS) + 1; // inclusive
 
-    // === SONGS: ADD 26 OBJECTS HERE ===
-    // Day 1 = 10 Dec, Day 2 = 11 Dec, ... Day 26 = 4 Jan.
-    const SONGS = [
-      { title: "", url: "https://youtu.be/N_dUmDBfp6k?si=79NTejHDlG8r1KS_" },
-      { title: "", url: "https://youtu.be/Q1bDzKehO90?si=Rl0do-Jw1AX_Ufqk" },
-      { title: "", url: "https://www.youtube.com/watch?v=YYYYYYYYYYY" },
-      { title: "", url: "https://www.youtube.com/watch?v=ZZZZZZZZZZZ" },
-      { title: "", url: "https://open.spotify.com/track/AAAAAAAAAAA" },
-      // ...continue until you have at least NUM_DAYS (= 26) entries...
-      // { title: "Day 6 – ...", url: "https://..." },
-    ];
+  // === SONGS: ADD OBJECTS HERE (at least NUM_DAYS entries ideally) ===
+  const SONGS = [
+    { title: "", url: "https://youtu.be/N_dUmDBfp6k?si=79NTejHDlG8r1KS_" },
+    { title: "", url: "https://youtu.be/Q1bDzKehO90?si=Rl0do-Jw1AX_Ufqk" },
+    { title: "", url: "https://www.youtube.com/watch?v=YYYYYYYYYYY" },
+    { title: "", url: "https://www.youtube.com/watch?v=ZZZZZZZZZZZ" },
+    { title: "", url: "https://open.spotify.com/track/AAAAAAAAAAA" },
+    // ... add more as needed ...
+  ];
 
-    const grid = document.getElementById("calendar-grid");
-    const statusEl = document.getElementById("status");
+  const grid = document.getElementById("calendar-grid");
+  const statusEl = document.getElementById("status");
 
-    function formatShortDate(date) {
-      return date.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
-    }
+  function formatShortDate(date) {
+    return date.toLocaleDateString(undefined, { day: "2-digit", month: "short" });
+  }
 
-    function formatLongDate(date) {
-      return date.toLocaleDateString(undefined, {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      });
-    }
+  function formatLongDate(date) {
+    return date.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+  }
 
-    function buildCalendar() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+  function buildCalendar() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      let openedCount = 0;
-      let availableToday = 0;
+    let openedCount = 0;
+    let availableToday = 0;
 
-      for (let i = 0; i < NUM_DAYS; i++) {
-        const unlockDate = new Date(START_DATE.getTime() + i * ONE_DAY_MS);
-        const song = SONGS[i];
+    for (let i = 0; i < NUM_DAYS; i++) {
+      const unlockDate = new Date(START_DATE.getTime() + i * ONE_DAY_MS);
+      const song = SONGS[i];
 
-        const dayDiv = document.createElement("div");
-        dayDiv.classList.add("day");
+      // 🔹 Define unlockMidnight *before* we use it
+      const unlockMidnight = new Date(unlockDate);
+      unlockMidnight.setHours(0, 0, 0, 0);
 
-        const label = document.createElement("span");
-        label.classList.add("label");
-        label.textContent = i + 1;
-        dayDiv.appendChild(label);
+      const dayDiv = document.createElement("div");
+      dayDiv.classList.add("day");
 
-        const dateSpan = document.createElement("span");
-        dateSpan.classList.add("date");
-        dateSpan.textContent = formatShortDate(unlockDate);
-        dayDiv.appendChild(dateSpan);
+      const label = document.createElement("span");
+      label.classList.add("label");
+      label.textContent = i + 1;
+      dayDiv.appendChild(label);
 
-        const infoSpan = document.createElement("span");
-        infoSpan.classList.add("info");
-        infoSpan.textContent = song && song.title ? song.title : "secret";
-        dayDiv.appendChild(infoSpan);
+      const dateSpan = document.createElement("span");
+      dateSpan.classList.add("date");
+      dateSpan.textContent = formatShortDate(unlockDate);
+      dayDiv.appendChild(dateSpan);
 
-        const unlockMidnight = new Date(unlockDate);
-        unlockMidnight.setHours(0, 0, 0, 0);
+      // 🔹 Decide what text to show in the info line
+      const infoSpan = document.createElement("span");
+      infoSpan.classList.add("info");
 
+      let infoText;
+      if (song && song.title) {
+        // If you explicitly set a title for this day, always show it
+        infoText = song.title;
+      } else {
+        // No title: use date logic
+        if (today < unlockMidnight) {
+          infoText = "secret";   // future day, still locked
+        } else {
+          infoText = "open me";  // today or any past day
+        }
+      }
+
+      infoSpan.textContent = infoText;
+      dayDiv.appendChild(infoSpan);
+
+      // 🔹 State of the day (locked / available / past)
       if (today < unlockMidnight) {
         dayDiv.classList.add("locked");
       } else {
@@ -388,16 +403,11 @@
         if (today.getTime() === unlockMidnight.getTime()) {
           dayDiv.classList.add("available");
           availableToday++;
-
-          // ★ NEW: Replace "secret" with "open me" on the unlock day
-          if (infoSpan.textContent === "secret") {
-            infoSpan.textContent = "open me";
-          }
-
         } else if (today > unlockMidnight) {
           dayDiv.classList.add("past");
         }
 
+        // Click behaviour for unlocked days
         if (song && song.url) {
           dayDiv.addEventListener("click", () => {
             window.open(song.url, "_blank", "noopener");
@@ -409,41 +419,41 @@
         }
       }
 
+      // 🔹 Message for locked days when clicked
+      dayDiv.addEventListener("click", () => {
+        if (dayDiv.classList.contains("locked")) {
+          alert(
+            `This track unlocks on ${formatLongDate(unlockDate)}.\n` +
+            `Come back then ✨`
+          );
+        }
+      });
 
-        dayDiv.addEventListener("click", () => {
-          if (dayDiv.classList.contains("locked")) {
-            alert(
-              `This track unlocks on ${formatLongDate(unlockDate)}.\n` +
-              `Come back then ✨`
-            );
-          }
-        });
-
-        grid.appendChild(dayDiv);
-      }
-
-      openedCount = Math.min(openedCount, NUM_DAYS);
-
-      if (openedCount === 0) {
-        statusEl.textContent =
-          "Nothing is unlocked yet. First song appears on " +
-          formatLongDate(START_DATE) + ".";
-      } else if (openedCount >= NUM_DAYS) {
-        statusEl.textContent =
-          "You reached the end of the pixel bar timeline.";
-      } else {
-        statusEl.textContent =
-          `Unlocked so far: ${openedCount}/${NUM_DAYS}` +
-          (availableToday > 0
-            ? " — you’ve got a new surprise today! 🎁"
-            : " — no new door today, but you can replay old songs.");
-      }
-
-      console.log("Calendar days:", NUM_DAYS, "(add at least this many SONGS).");
+      grid.appendChild(dayDiv);
     }
 
-    buildCalendar();
-  </script>
+    openedCount = Math.min(openedCount, NUM_DAYS);
+
+    if (openedCount === 0) {
+      statusEl.textContent =
+        "Nothing is unlocked yet. First song appears on " +
+        formatLongDate(START_DATE) + ".";
+    } else if (openedCount >= NUM_DAYS) {
+      statusEl.textContent =
+        "You reached the end of the pixel bar timeline.";
+    } else {
+      statusEl.textContent =
+        `Unlocked so far: ${openedCount}/${NUM_DAYS}` +
+        (availableToday > 0
+          ? " — you’ve got a new surprise today! 🎁"
+          : " — no new door today, but you can replay old songs.");
+    }
+
+    console.log("Calendar days:", NUM_DAYS, "(add at least this many SONGS).");
+  }
+
+  buildCalendar();
+</script>
 <!-- 100% privacy-first analytics -->
 <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </body>
