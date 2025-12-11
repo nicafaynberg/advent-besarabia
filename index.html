@@ -374,8 +374,25 @@
 
         const infoSpan = document.createElement("span");
         infoSpan.classList.add("info");
-        infoSpan.textContent = song && song.title ? song.title : "secret";
+
+        // Decide what text to show
+        let infoText;
+
+        // If you gave this day a title, always show it
+        if (song && song.title) {
+          infoText = song.title;
+        } else {
+          // No explicit title: change based on date
+          if (today < unlockMidnight) {
+            infoText = "secret";      // future, still locked
+          } else {
+            infoText = "open me";     // today or any past day
+          }
+        }
+
+        infoSpan.textContent = infoText;
         dayDiv.appendChild(infoSpan);
+
 
         const unlockMidnight = new Date(unlockDate);
         unlockMidnight.setHours(0, 0, 0, 0);
@@ -388,11 +405,6 @@
         if (today.getTime() === unlockMidnight.getTime()) {
           dayDiv.classList.add("available");
           availableToday++;
-
-          // ★ NEW: Replace "secret" with "open me" on the unlock day
-          if (infoSpan.textContent === "secret") {
-            infoSpan.textContent = "open me";
-          }
 
         } else if (today > unlockMidnight) {
           dayDiv.classList.add("past");
