@@ -209,24 +209,55 @@
       color: #d1d5db;
     }
 
+    /* === AVAILABLE (today) === */
     .day.available {
       background: linear-gradient(135deg, #22c55e, #16a34a);
       border-color: #bbf7d0;
       color: #020617;
+      position: relative;
+      animation: pulseGlow 2s infinite ease-in-out;
     }
 
     .day.available span.info {
       color: #020617;
     }
 
+    /* ✓ mark for today and past */
+    .day.available::after,
+    .day.past::after {
+      content: "✓";
+      position: absolute;
+      top: 0.2rem;
+      right: 0.3rem;
+      font-size: 0.8rem;
+      color: #020617;
+    }
+
+    /* === PAST DAYS (green but duller) === */
     .day.past {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-color: #bbf7d0;
-      color: #020617;
+      background: linear-gradient(135deg, #15803d, #166534); /* muted green */
+      border-color: #16a34a;
+      color: #e5e7eb;
+      position: relative;
     }
+
     .day.past span.info {
-      color: #020617;
+      color: #e5e7eb;
     }
+
+    /* === Pulse animation for today's box === */
+    @keyframes pulseGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.6);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+      }
+    }
+
 
     .day.past::after {
       content: "✓";
